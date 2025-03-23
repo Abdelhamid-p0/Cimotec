@@ -269,7 +269,7 @@ Widget build(BuildContext context) {
       children: [
         // Fond camouflage - SVG
         SvgPicture.asset(
-          '../../assets/4.svg',
+          '../assets/4.svg',
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,

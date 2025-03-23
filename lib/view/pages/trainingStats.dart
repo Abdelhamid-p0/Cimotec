@@ -30,7 +30,7 @@ class TrainingStatsPage extends StatelessWidget {
         children: [
           // Fond camouflage - SVG
           SvgPicture.asset(
-            '../../assets/5.svg',
+            '../assets/5.svg',
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,

@@ -103,14 +103,14 @@ class _LaneSelectionMilitaryScreenState extends State<LaneSelectionMilitaryScree
 
   // Map pour les images d'armes - Assurez-vous que ces fichiers existent dans vos assets
   final Map<String, String> weaponImages = {
-    'AK-47': '../../assets/weapons/AK-47.png',
-    'AK-102': '../../assets/weapons/AK-102.png',
-    'M16 A1': '../../assets/weapons/M16.png',
-    'M16 A2': '../../assets/weapons/M16.png',
-    'SAR-21': '../../assets/weapons/SAR-21.png',
-    'Pistolet PA TT 33': '../../assets/weapons/TT33.png',
-    'Pistolet PA GP 35': '../../assets/weapons/GP35.png',
-    'MP5': '../../assets/weapons/MP5.png',
+    'AK-47': '../assets/weapons/AK-47.png',
+    'AK-102': '../assets/weapons/AK-102.png',
+    'M16 A1': '../assets/weapons/M16.png',
+    'M16 A2': '../assets/weapons/M16.png',
+    'SAR-21': '../assets/weapons/SAR-21.png',
+    'Pistolet PA TT 33': '../assets/weapons/TT33.png',
+    'Pistolet PA GP 35': '../assets/weapons/GP35.png',
+    'MP5': '../assets/weapons/MP5.png',
   };
 
   @override
@@ -120,7 +120,7 @@ class _LaneSelectionMilitaryScreenState extends State<LaneSelectionMilitaryScree
         children: [
           // Fond camouflage - SVG
           SvgPicture.asset(
-            '../../assets/2.svg', // Assurez-vous que ce fichier existe dans vos assets
+            '../assets/2.svg', // Assurez-vous que ce fichier existe dans vos assets
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,

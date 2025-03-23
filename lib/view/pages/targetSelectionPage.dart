@@ -63,7 +63,7 @@ class _TrainingModePageState extends State<TrainingModePage> {
         children: [
           // Fond camouflage - SVG
           SvgPicture.asset(
-            '../../assets/3.svg',
+            '../assets/3.svg',
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
