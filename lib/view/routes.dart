@@ -5,21 +5,32 @@ import 'package:cible_militaire/view/pages/training_start.dart';
 import 'package:flutter/material.dart';
 
 class AppRoutes {
-  static const String home = '/Login';
-  static const String laneselection = '/LaneSelectionPage';
-  static const String targetselection = '/TargetSelectionPage';
-  static const String trainingSession = '/TrainingSessionPage'; 
+  static const String login = '/login';
+  static const String laneSelection = '/lane-selection';
+  static const String targetSelection = '/target-selection';
+  static const String trainingSession = '/training-session'; 
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
-      case home:
+      case login:
         return MaterialPageRoute(builder: (_) => LoginTabletMilitaryScreen());
-      case laneselection:
+      case laneSelection:
         return MaterialPageRoute(builder: (_) => LaneSelectionMilitaryScreen());
-      case targetselection:
-        return MaterialPageRoute(builder: (_) => TrainingModePage());
+      case targetSelection:
+        final args = settings.arguments;
+        if (args is! int) {
+          return _errorRoute('Argument must be an integer');
+        }
+        return MaterialPageRoute(
+          builder: (_) => TrainingModePage(selectedCoups: args),
+        );
       case trainingSession:
-        final args = settings.arguments as Map<String, dynamic>;
+        final args = settings.arguments as Map<String, dynamic>?;
+        if (args == null || 
+            args['selectedMode'] == null || 
+            args['selectedTarget'] == null) {
+          return _errorRoute('Invalid arguments for training session');
+        }
         return MaterialPageRoute(
           builder: (_) => TrainingSessionPage(
             selectedMode: args['selectedMode'],
@@ -27,11 +38,15 @@ class AppRoutes {
           ),
         );
       default:
-        return MaterialPageRoute(
-          builder: (_) => Scaffold(
-            body: Center(child: Text('Page non trouvée : ${settings.name}')),
-          ),
-        );
+        return _errorRoute('Route not found: ${settings.name}');
     }
+  }
+
+  static MaterialPageRoute _errorRoute(String message) {
+    return MaterialPageRoute(
+      builder: (_) => Scaffold(
+        body: Center(child: Text(message)),
+      ),
+    );
   }
 }

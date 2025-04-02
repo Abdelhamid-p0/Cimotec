@@ -5,7 +5,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
 class TrainingModePage extends StatefulWidget {
-  const TrainingModePage({super.key});
+  const TrainingModePage({super.key, required this.selectedCoups});
+ final int selectedCoups;
 
   @override
   State<TrainingModePage> createState() => _TrainingModePageState();
@@ -14,8 +15,29 @@ class TrainingModePage extends StatefulWidget {
 class _TrainingModePageState extends State<TrainingModePage> {
   String selectedMode = 'Entraînement libre';
   int selectedTargetIndex = 0;
+
   
   final List<Map<String, dynamic>> targets = [
+      {
+  'name': 'Cible silhouette',
+  'radius': '24.00 mm',
+  'svg': '''
+<svg viewBox="0 0 200 300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Grande forme extérieure -->
+  <polygon points="50,20 150,20 180,60 180,230 150,280 50,280 20,230 20,60" fill="black" stroke="white" stroke-width="2"/>
+  
+  <!-- Section intermédiaire -->
+  <polygon points="70,70 130,70 150,110 150,210 130,250 70,250 50,210 50,110" fill="black" stroke="white" stroke-width="2"/>
+  
+  <!-- Section supérieure (tête agrandie) -->
+  <polygon points="75,-10 125,-10 125,50 75,50" fill="black" stroke="white" stroke-width="2"/>
+  
+  <!-- Deux lignes verticales en bas -->
+  <line x1="90" y1="250" x2="90" y2="280" stroke="white" stroke-width="2"/>
+  <line x1="110" y1="250" x2="110" y2="280" stroke="white" stroke-width="2"/>
+</svg>
+  '''
+},
     {
       'name': 'Cible standard',
       'radius': '22.75 mm',
@@ -42,22 +64,15 @@ class _TrainingModePageState extends State<TrainingModePage> {
           <circle cx="100" cy="100" r="5" stroke="white" stroke-width="1" fill="white"/>
         </svg>
       '''
-    },
-    {
-      'name': 'Cible rapide',
-      'radius': '25.00 mm',
-      'svg': '''
-        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="100" cy="100" r="90" stroke="black" stroke-width="5" fill="white"/>
-          <circle cx="100" cy="100" r="45" stroke="black" stroke-width="5" fill="black"/>
-          <circle cx="100" cy="100" r="15" stroke="white" stroke-width="3" fill="white"/>
-        </svg>
-      '''
     }
+
   ];
   
   @override
   Widget build(BuildContext context) {
+    
+    int selectedCoups = widget.selectedCoups;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -119,7 +134,7 @@ class _TrainingModePageState extends State<TrainingModePage> {
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(color: Colors.white.withOpacity(0.3)),
                                 ),
-                                child: _buildModeCharacteristics(),
+                                child: _buildModeCharacteristics(selectedCoups),
                               ),
                               
                               const Spacer(),
@@ -352,7 +367,7 @@ Center(
     );
   }
 
-  Widget _buildModeCharacteristics() {
+  Widget _buildModeCharacteristics(int selectedCoups) {
     switch (selectedMode) {
       case 'Entraînement libre':
         return const Column(
@@ -379,10 +394,10 @@ Center(
         );
       
       case 'Entraînement dirigé par officier de tir':
-        return const Column(
+        return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Entraînement dirigé',
               style: TextStyle(
                 color: Colors.white,
@@ -390,20 +405,20 @@ Center(
                 fontSize: 18,
               ),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _CharacteristicItem(label: '1:00', value: 'une minute'),
-                _CharacteristicItem(label: '10 coups', value: '(selon l\'arme)'),
-                _CharacteristicItem(label: '2', value: 'séries'),
+                const _CharacteristicItem(label: '1:00', value: 'une minute'),
+                _CharacteristicItem(label: 'Nombre de coups', value: selectedCoups.toString()),
+                const _CharacteristicItem(label: '2', value: 'séries'),
               ],
             ),
           ],
         );
       
       case 'Entraînement compétition':
-        return const Column(
+        return  Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
@@ -419,7 +434,7 @@ Center(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _CharacteristicItem(label: '0:30', value: '30 secondes'),
-                _CharacteristicItem(label: 'Nombre de coups', value: '(selon l\'arme)'),
+                _CharacteristicItem(label: 'Nombre de coups', value: selectedCoups.toString()),
                 _CharacteristicItem(label: '1', value: 'série'),
               ],
             ),

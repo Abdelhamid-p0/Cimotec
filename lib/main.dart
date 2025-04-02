@@ -25,8 +25,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.home,
-      onGenerateRoute: AppRoutes.generateRoute,
+      initialRoute: AppRoutes.login,
+       onGenerateRoute: AppRoutes.generateRoute,
     );
   }
 }

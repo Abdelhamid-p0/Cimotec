@@ -230,7 +230,7 @@ class _LoginTabletMilitaryScreenState extends State<LoginTabletMilitaryScreen> {
 
                       SizedBox(height: 24),
                       // Bouton Start
-                      Largebutton("START", AppRoutes.laneselection)
+                      Largebutton("START", AppRoutes.laneSelection)
                     ],
                   ),
                 ),

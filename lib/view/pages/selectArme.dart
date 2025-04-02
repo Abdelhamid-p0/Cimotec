@@ -94,6 +94,7 @@ class _LaneSelectionMilitaryScreenState extends State<LaneSelectionMilitaryScree
   String? selectedEmplacement = "1";
   String selectedRange = '100m';
   String selectedWeapon = 'AK-47'; // Default weapon for 100m
+  int selectedCoups = 10;
 
   // Define weapon options based on range
   final Map<String, List<String>> weaponOptions = {
@@ -111,6 +112,17 @@ class _LaneSelectionMilitaryScreenState extends State<LaneSelectionMilitaryScree
     'Pistolet PA TT 33': '../assets/weapons/TT33.png',
     'Pistolet PA GP 35': '../assets/weapons/GP35.png',
     'MP5': '../assets/weapons/MP5.png',
+  };
+
+    final Map<String, String> weaponCoups = {
+    'AK-47': '10',
+    'AK-102': '10',
+    'M16 A1': '10',
+    'M16 A2': '10',
+    'SAR-21': '10',
+    'Pistolet PA TT 33': '8',
+    'Pistolet PA GP 35': '8',
+    'MP5': '15',
   };
 
   @override
@@ -191,14 +203,21 @@ class _LaneSelectionMilitaryScreenState extends State<LaneSelectionMilitaryScree
                         // Sélection de l'arme
                         _buildSectionTitle('Sélectionner l\'arme'),
                         _buildWeaponDropdown(),
-                        
+
                         const SizedBox(height: 24),
                         
                         // Bouton de confirmation
                         ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushNamed(context, AppRoutes.targetselection);
-                          },
+  onPressed: () {
+    final selectedCoupsStr = weaponCoups[selectedWeapon] as String; // D'abord récupérer comme String
+    final selectedCoups = int.tryParse(selectedCoupsStr) ?? 0; // Parser en int avec une valeur par défaut
+    Navigator.pushNamed(
+      context, 
+      AppRoutes.targetSelection,
+      arguments: selectedCoups,
+    );
+  },
+
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.amber.withOpacity(0.8),
                             foregroundColor: Colors.black,
