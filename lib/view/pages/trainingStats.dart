@@ -1,4 +1,4 @@
-import 'package:cible_militaire/view/models/shot.dart';
+import 'package:cible_militaire/model/shot.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cible_militaire/view/widgets/nav_bar.dart';
@@ -498,8 +498,8 @@ class TrainingStatsPage extends StatelessWidget {
           
           // Tirs de cette série
           ...seriesShots.map((shot) => Positioned(
-            left: (shot.x / 400 * 180) - 3 + 90 - 10,  // Ajustement pour le centre et la taille
-            top: (shot.y / 400 * 180) - 3 + 90 - 10,
+            left: (0 / 400 * 180) - 3 + 90 - 10,  // Ajustement pour le centre et la taille
+            top: (0 / 400 * 180) - 3 + 90 - 10,
             child: Container(
               width: 6,
               height: 6,

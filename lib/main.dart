@@ -1,32 +1,71 @@
+import 'package:cible_militaire/controller/user_session.dart';
 import 'package:cible_militaire/view/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-
-    WidgetsFlutterBinding.ensureInitialized(); // Assure l'initialisation avant d'appliquer l'orientation
+  // Initialisation des bindings et orientation
+  WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ]);
-  runApp(const MyApp());
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => UserSession()),
+        // Ajoutez d'autres providers ici au besoin
+      ],
+      child: const MilitaryTargetApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MilitaryTargetApp extends StatelessWidget {
+  const MilitaryTargetApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Cible Militaire',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+      theme: _buildMilitaryTheme(),
       debugShowCheckedModeBanner: false,
       initialRoute: AppRoutes.login,
-       onGenerateRoute: AppRoutes.generateRoute,
+      onGenerateRoute: AppRoutes.generateRoute,
+      // Pour la navigation globale
+      navigatorKey: NavigationService.navigatorKey,
     );
+  }
+
+  ThemeData _buildMilitaryTheme() {
+    return ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: const Color(0xFF4CAF50), // Vert militaire
+        brightness: Brightness.light,
+        primary: const Color(0xFF4CAF50),
+        secondary: const Color(0xFF8BC34A),
+      ),
+      useMaterial3: true,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFF4CAF50),
+        elevation: 0,
+      ),
+      // Autres customizations...
+    );
+  }
+}
+
+// Service de navigation globale
+class NavigationService {
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  
+  static Future<dynamic> navigateTo(String routeName, {arguments}) {
+    return navigatorKey.currentState!.pushNamed(routeName, arguments: arguments);
+  }
+  
+  static void goBack() {
+    navigatorKey.currentState!.pop();
   }
 }

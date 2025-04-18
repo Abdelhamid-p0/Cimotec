@@ -1,9 +1,11 @@
+import 'package:cible_militaire/controller/authentificationService.dart';
+import 'package:cible_militaire/controller/user_session.dart';
 import 'package:cible_militaire/view/routes.dart';
 import 'package:cible_militaire/view/widgets/drop-downList.dart';
 import 'package:cible_militaire/view/widgets/inputField.dart';
-import 'package:cible_militaire/view/widgets/largeButton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 
  class LoginTabletMilitaryScreen extends StatefulWidget {
   const LoginTabletMilitaryScreen({super.key});
@@ -25,6 +27,8 @@ class _LoginTabletMilitaryScreenState extends State<LoginTabletMilitaryScreen> {
   final String _hintListe = 'Vous ètes en mode invitée';
   bool isCreateMode = false;
   bool isInvite = false;
+  bool _isLoading = false;
+
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +42,7 @@ class _LoginTabletMilitaryScreenState extends State<LoginTabletMilitaryScreen> {
             width: double.infinity,
             height: double.infinity,
           ),
-
+          
           // Interface principale
           Row(
             children: [
@@ -176,8 +180,6 @@ class _LoginTabletMilitaryScreenState extends State<LoginTabletMilitaryScreen> {
                               brigade = newValue! ;
                           });}
                             ),
-                        
-
                         ],
 
                       ),
@@ -205,32 +207,114 @@ class _LoginTabletMilitaryScreenState extends State<LoginTabletMilitaryScreen> {
                             ),
 
 
-                      SizedBox(height: 16),
-                      
-                      // Sélecteur de BDE avec position relative pour le dropdown
-                       Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.1),
-                                border: Border.all(color: Colors.white.withOpacity(0.3)),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: TextField(
-                                controller: _BdeNumlisteController,
-                                style: TextStyle(color: Colors.white),
-                                decoration: InputDecoration(
-                                  hintText:  isInvite? _hintListe :"Bde",
-                                  hintStyle: TextStyle(color: Colors.white70),
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                  border: InputBorder.none,
-                                ),
-                                readOnly: isInvite
-
-                              ),
-                            ),
-
                       SizedBox(height: 24),
                       // Bouton Start
-                      Largebutton("START", AppRoutes.laneSelection)
+// Bouton Start avec style amélioré
+Container(
+  width: double.infinity,
+  decoration: BoxDecoration(
+    color: Colors.white.withOpacity(0.1),
+    border: Border.all(color: Colors.white.withOpacity(0.3)),
+    borderRadius: BorderRadius.circular(8),
+  ),
+  child: ElevatedButton(
+   onPressed: () async {
+  FocusScope.of(context).unfocus();
+  setState(() => _isLoading = true);
+  
+  try {
+    if (isCreateMode) {
+      bool isRegistered = await AuthService.registeringAuthentificationService(
+        _nomController,
+        _prenomController,
+        _NumlisteController,
+        _BdeNumlisteController,
+        promotion,
+        brigade,
+      );
+      
+      if (isRegistered) {
+        final players = await AuthService.readPlayerData();
+        final loggedInUser = players.firstWhere(
+          (p) => p.nom == _nomController.text && p.prenom == _prenomController.text
+        );
+        
+        // CORRECTION: Utilisez Provider pour accéder à UserSession
+        final userSession = Provider.of<UserSession>(context, listen: false);
+        userSession.login(loggedInUser);
+        
+        print("Joueur connecté: ${loggedInUser.toString()}");
+        Navigator.pushNamed(context, AppRoutes.laneSelection);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Erreur lors de l'inscription")),
+        );
+      }
+    } else {
+      bool isAuthenticated = await AuthService.checkingAuthentificationService(
+        _nomController,
+        _prenomController,
+        _NumlisteController,
+        _BdeNumlisteController,
+      );
+      
+      if (isAuthenticated) {
+        final players = await AuthService.readPlayerData();
+        final loggedInUser = players.firstWhere(
+          (p) => p.nom == _nomController.text && p.prenom == _prenomController.text
+        );
+        
+        // CORRECTION: Utilisez Provider pour accéder à UserSession
+        final userSession = Provider.of<UserSession>(context, listen: false);
+        userSession.login(loggedInUser);
+        
+        print("Joueur authentifié: ${loggedInUser.toString()}");
+        Navigator.pushNamed(context, AppRoutes.laneSelection);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Authentification échouée")),
+        );
+      }
+    }
+  } catch (e) {
+    print("Erreur: $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Une erreur est survenue")),
+    );
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
+  }
+},
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.transparent,
+      shadowColor: Colors.transparent,
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+    ),
+    child: _isLoading 
+      ? SizedBox(
+          height: 20,
+          width: 20,
+          child: CircularProgressIndicator(
+            color: Colors.white,
+            strokeWidth: 2,
+          ),
+        )
+      : Text(
+          'Start',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+  ),
+),
+SizedBox(height: 24),
+
+
                     ],
                   ),
                 ),

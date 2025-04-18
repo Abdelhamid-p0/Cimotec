@@ -1,0 +1,42 @@
+[
+    {
+      "nom": "Abdelhamid",
+      "prenom": "Hachimi",
+      "promotion": "invité",
+      "Brigade": "1",
+      "N° Liste": "-1",
+      "Bde": "-1" ,
+      "résumé" : {
+               
+              "Nombres de parties jouées": "",
+              "Moyennes de points par tir": "",             
+              "nombres de tirs au tète": "",
+              "nombres de tirs au ventre": "",
+              "nombres de tirs au extrémité": "",
+              "nombres de tirs au manqué": ""
+              },
+
+    "historiques": {
+
+       "partie 1":{ 
+       "L'emplacement de tir": "",
+        "la portée": "",
+        "l'arme": "",
+        "Mode d' entrainement": "",
+        "Statistiques":{
+          "Nombres de séries": "",
+          "Nombres de tirs": "",
+          "temps": "",             
+          "nombres de tirs au tète": "",
+          "nombres de tirs au ventre": "",
+          "nombres de tirs au extrémité": "",
+          "nombres de tirs au manqué": ""
+          }
+       }
+
+
+
+    }
+  }
+  ]
+  

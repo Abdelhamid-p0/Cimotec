@@ -174,7 +174,7 @@ class _LaneSelectionMilitaryScreenState extends State<LaneSelectionMilitaryScree
                             ),
                           ),
                           child: const Text(
-                            'SELECT LANE',
+                            'SÉLECTIONNER UNE LIGNE',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -234,7 +234,7 @@ class _LaneSelectionMilitaryScreenState extends State<LaneSelectionMilitaryScree
                               const Icon(Icons.check_box, size: 16),
                               const SizedBox(width: 8),
                               const Text(
-                                'SELECT',
+                                'SÉLECTIONNER',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: 1.2,
