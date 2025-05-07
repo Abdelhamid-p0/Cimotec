@@ -1,5 +1,6 @@
-import 'package:cible_militaire/model/shot.dart';
 import 'package:flutter/material.dart';
+import 'package:cible_militaire/model/shot.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cible_militaire/view/widgets/nav_bar.dart';
 
@@ -12,25 +13,29 @@ class TrainingStatsPage extends StatelessWidget {
   final double accuracy;
 
   const TrainingStatsPage({
-    super.key,
+    Key? key,
     required this.selectedMode,
     required this.selectedTarget,
     required this.shots,
     required this.maxSeries,
     required this.totalScore,
     required this.accuracy,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final seriesData = _generateSeriesData();
-    
+    final headShots = shots.where((shot) => shot.section == "head").length;
+    final torsoShots = shots.where((shot) => shot.section == "torso").length;
+    final extremityShots = shots.where((shot) => shot.section == "extremity").length;
+    final totalShots = shots.length;
+    final averageScore = totalShots > 0 ? totalScore / totalShots : 0.0;
+
     return Scaffold(
       body: Stack(
         children: [
-          // Fond camouflage - SVG
+          // Fond d'écran SVG
           SvgPicture.asset(
-            '../assets/5.svg',
+            'assets/4.svg',
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
@@ -38,90 +43,256 @@ class TrainingStatsPage extends StatelessWidget {
           
           Column(
             children: [
-              // En-tête
-              NavBar(),
+              // Barre de navigation
+              const NavBar(),
               
-              // Contenu principal
+              // Contenu scrollable
               Expanded(
-                child: Padding(
+                child: SingleChildScrollView(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Résultats de la session',
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              shadows: [
-                                Shadow(
-                                  blurRadius: 4.0,
-                                  color: Colors.black.withOpacity(0.5),
-                                  offset: Offset(1.0, 1.0),
+                      // En-tête avec opacité
+                      _buildTransparentCard(
+                        child: Column(
+                          children: [
+                            Text(
+                              'Résumé de la Session',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Divider(color: Colors.white.withOpacity(0.5)),
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Mode: $selectedMode',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      'Cible: ${selectedTarget['name'] ?? 'Non spécifiée'}',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      DateFormat('dd/MM/yyyy').format(DateTime.now()),
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      DateFormat('HH:mm').format(DateTime.now()),
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                          ),
-                          _buildSessionInfoCard(context),
-                        ],
+                          ],
+                        ),
                       ),
+                      const SizedBox(height: 20),
                       
-                      SizedBox(height: 24),
-                      
-                      // Résumé des performances
-                      _buildPerformanceSummary(),
-                      
-                      SizedBox(height: 24),
-                      
-                      // Résultats par série
-                      Expanded(
-                        child: _buildSeriesResults(seriesData, context),
-                      ),
-                      
-                      SizedBox(height: 16),
-                      
-                      // Boutons d'action
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.pop(context); // Retour à la page précédente
-                            },
-                            icon: Icon(Icons.arrow_back),
-                            label: Text('Retour'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blueGrey.withOpacity(0.7),
-                              foregroundColor: Colors.white,
-                              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                      // Statistiques principales avec opacité
+                      _buildTransparentCard(
+                        child: Column(
+                          children: [
+                            Text(
+                              'Statistiques Principales',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
                             ),
-                          ),
-                          SizedBox(width: 16),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              // Navigation vers une nouvelle session
-                              Navigator.pop(context);
-                              // Ici, vous pourriez appeler la fonction _resetSession du parent
-                            },
-                            icon: Icon(Icons.refresh),
-                            label: Text('Nouvelle Session'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green.withOpacity(0.7),
-                              foregroundColor: Colors.white,
-                              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                            const SizedBox(height: 15),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                _buildStatCircle('Score Total', totalScore.toStringAsFixed(1), Colors.blue),
+                                _buildStatCircle('Précision', '${accuracy.toStringAsFixed(1)}%', Colors.green),
+                                _buildStatCircle('Moyenne', averageScore.toStringAsFixed(1), Colors.orange),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              'Répartition des Tirs',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
                             ),
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                _buildSectionStat('Tête', headShots, totalShots, Colors.green),
+                                _buildSectionStat('Ventre', torsoShots, totalShots, Colors.blue),
+                                _buildSectionStat('Extrémité', extremityShots, totalShots, Colors.orange),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      
+                      // Détails par série avec opacité
+                      _buildTransparentCard(
+                        child: Column(
+                          children: [
+                            Text(
+                              'Détails par Série',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            const Row(
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(
+                                    'Série',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    'Tirs',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    'Score',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    'Précision',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Divider(color: Colors.white.withOpacity(0.5)),
+                            for (int i = 1; i <= maxSeries; i++)
+                              _buildSeriesRow(i),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      
+                      // Détails des tirs avec opacité
+                      _buildTransparentCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Détails des Tirs',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            SizedBox(
+                              height: 200,
+                              child: ListView.builder(
+                                itemCount: shots.length,
+                                itemBuilder: (context, index) {
+                                  final shot = shots[index];
+                                  return ListTile(
+                                    leading: _getSectionIcon(shot.section),
+                                    title: Text(
+                                      'Tir ${index + 1}',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                    subtitle: Text(
+                                      'Série ${shot.series} - ${DateFormat('HH:mm:ss').format(shot.timestamp)}',
+                                      style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                                    ),
+                                    trailing: Text(
+                                      '${shot.score.toStringAsFixed(1)} pts',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      
+                      // Bouton de partage
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            // TODO: Implémenter le partage
+                          },
+                          icon: const Icon(Icons.share, size: 20),
+                          label: const Text(
+                            'PARTAGER LES RÉSULTATS',
+                            style: TextStyle(fontSize: 16),
                           ),
-                        ],
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue[700],
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -134,412 +305,142 @@ class TrainingStatsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSessionInfoCard(BuildContext context) {
+  Widget _buildTransparentCard({required Widget child}) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.mode_standby, size: 14, color: Colors.white70),
-              SizedBox(width: 4),
-              Text(
-                selectedMode,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 4),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.track_changes, size: 14, color: Colors.white70),
-              SizedBox(width: 4),
-              Text(
-                selectedTarget['name'],
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPerformanceSummary() {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.black.withOpacity(0.6),
-            Colors.blueGrey.withOpacity(0.4),
-          ],
+        color: Colors.black.withOpacity(0.5), // Opacité ajustable ici
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.2),
+          width: 1,
         ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ],
       ),
       child: Padding(
-        padding: EdgeInsets.all(20),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildStatCard(
-              'Score Total',
-              totalScore.toStringAsFixed(1),
-              Icons.leaderboard,
-              Colors.amber,
-            ),
-            _buildVerticalDivider(),
-            _buildStatCard(
-              'Précision',
-              '${accuracy.toStringAsFixed(1)}%',
-              Icons.precision_manufacturing,
-              Colors.lightBlue,
-            ),
-            _buildVerticalDivider(),
-            _buildStatCard(
-              'Tirs',
-              '${shots.length}',
-              Icons.track_changes,
-              Colors.green,
-            ),
-          ],
-        ),
+        padding: const EdgeInsets.all(16.0),
+        child: child,
       ),
     );
   }
 
-  Widget _buildVerticalDivider() {
-    return Container(
-      height: 50,
-      width: 1,
-      color: Colors.white.withOpacity(0.2),
-    );
-  }
-
-  Widget _buildStatCard(String title, String value, IconData icon, Color accentColor) {
+  Widget _buildStatCircle(String label, String value, Color color) {
     return Column(
-      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          padding: EdgeInsets.all(12),
+          width: 70,
+          height: 70,
           decoration: BoxDecoration(
-            color: accentColor.withOpacity(0.2),
+            color: color.withOpacity(0.3),
             shape: BoxShape.circle,
-            border: Border.all(color: accentColor.withOpacity(0.3), width: 2),
+            border: Border.all(color: color, width: 2),
           ),
-          child: Icon(
-            icon,
-            color: accentColor,
-            size: 32,
-          ),
-        ),
-        SizedBox(height: 12),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        SizedBox(height: 4),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.white70,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSeriesResults(List<Map<String, dynamic>> seriesData, BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Résultats par série',
+          child: Center(
+            child: Text(
+              value,
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
-                shadows: [
-                  Shadow(
-                    blurRadius: 4.0,
-                    color: Colors.black.withOpacity(0.5),
-                    offset: Offset(1.0, 1.0),
-                  ),
-                ],
               ),
             ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.4),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white.withOpacity(0.1)),
-              ),
-              child: Text(
-                '${seriesData.length} séries',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 16),
-        Expanded(
-          child: ListView.separated(
-            itemCount: seriesData.length,
-            separatorBuilder: (context, index) => SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final data = seriesData[index];
-              final seriesScore = data['score'] as double;
-              final accuracy = data['accuracy'] as double;
-              final shotCount = data['shots'] as int;
-              
-              // Déterminer la couleur basée sur la précision
-              Color accuracyColor;
-              if (accuracy >= 90) {
-                accuracyColor = Colors.green;
-              } else if (accuracy >= 70) {
-                accuracyColor = Colors.lightGreen;
-              } else if (accuracy >= 50) {
-                accuracyColor = Colors.amber;
-              } else if (accuracy >= 30) {
-                accuracyColor = Colors.orange;
-              } else {
-                accuracyColor = Colors.red;
-              }
-              
-              return Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.black.withOpacity(0.5),
-                      Colors.blueGrey.withOpacity(0.3),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: ExpansionTile(
-                  tilePadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.blueGrey.withOpacity(0.7),
-                    child: Text(
-                      '${data['series']}',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  title: Text(
-                    'Série ${data['series']}',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  subtitle: Container(
-                    margin: EdgeInsets.only(top: 8),
-                    height: 6,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(3),
-                      child: LinearProgressIndicator(
-                        value: accuracy / 100,
-                        backgroundColor: Colors.white.withOpacity(0.2),
-                        valueColor: AlwaysStoppedAnimation<Color>(accuracyColor),
-                      ),
-                    ),
-                  ),
-                  trailing: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'Score: ${seriesScore.toStringAsFixed(1)}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(
-                        '${accuracy.toStringAsFixed(1)}%',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: accuracyColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              _buildDetailStat('Tirs', '$shotCount', Icons.track_changes),
-                              _buildDetailStat('Moy. points', (seriesScore / shotCount).toStringAsFixed(1), Icons.stars),
-                              _buildDetailStat('Précision', '${accuracy.toStringAsFixed(1)}%', Icons.precision_manufacturing),
-                            ],
-                          ),
-                          SizedBox(height: 16),
-                          _buildTargetVisualization(data['series'] as int),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
           ),
         ),
-      ],
-    );
-  }
-
-  Widget _buildDetailStat(String label, String value, IconData icon) {
-    return Column(
-      children: [
-        Icon(icon, color: Colors.white70, size: 18),
-        SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
+        const SizedBox(height: 5),
         Text(
           label,
           style: TextStyle(
-            fontSize: 12,
-            color: Colors.white70,
+            fontSize: 14,
+            color: Colors.white,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildTargetVisualization(int seriesNum) {
-    // Filtrer les tirs de cette série
-    final seriesShots = shots.where((shot) => shot.series == seriesNum).toList();
+  Widget _buildSectionStat(String label, int count, int total, Color color) {
+    final percentage = total > 0 ? (count / total * 100) : 0.0;
     
-    return Container(
-      width: double.infinity,
-      height: 200,
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Cible miniature
-          SvgPicture.string(
-            selectedTarget['svg'],
-            width: 180,
-            height: 180,
+    return Column(
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.bold,
           ),
-          
-          // Tirs de cette série
-          ...seriesShots.map((shot) => Positioned(
-            left: (0 / 400 * 180) - 3 + 90 - 10,  // Ajustement pour le centre et la taille
-            top: (0 / 400 * 180) - 3 + 90 - 10,
-            child: Container(
-              width: 6,
-              height: 6,
-              decoration: BoxDecoration(
-                color: _getShotColor(shot.score),
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 1),
-              ),
+        ),
+        const SizedBox(height: 5),
+        Text(
+          '$count',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        Text(
+          '(${percentage.toStringAsFixed(1)}%)',
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.white.withOpacity(0.8),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSeriesRow(int seriesNumber) {
+    final seriesShots = shots.where((shot) => shot.series == seriesNumber).toList();
+    final seriesScore = seriesShots.fold(0.0, (sum, shot) => sum + shot.score);
+    final goodShots = seriesShots.where((shot) => shot.section == "head" || shot.section == "torso").length;
+    final accuracy = seriesShots.isNotEmpty ? (goodShots / seriesShots.length * 100) : 0.0;
+    
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              'Série $seriesNumber',
+              style: TextStyle(color: Colors.white),
             ),
-          )),
+          ),
+          Expanded(
+            child: Text(
+              '${seriesShots.length}',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              seriesScore.toStringAsFixed(1),
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              '${accuracy.toStringAsFixed(1)}%',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Color _getShotColor(double score) {
-    if (score >= 9) return Colors.red;
-    if (score >= 7) return Colors.orange;
-    if (score >= 5) return Colors.yellow;
-    if (score >= 3) return Colors.green;
-    return Colors.blue;
-  }
-
-  List<Map<String, dynamic>> _generateSeriesData() {
-    return List.generate(maxSeries, (index) => index + 1)
-        .map((series) {
-          final seriesShots = shots.where((shot) => shot.series == series).toList();
-          if (seriesShots.isEmpty) {
-            return {'series': series, 'score': 0.0, 'accuracy': 0.0, 'shots': 0};
-          }
-          
-          final seriesScore = seriesShots.fold<double>(0, (sum, shot) => sum + shot.score);
-          final seriesAccuracy = (seriesShots.where((shot) => shot.score >= 7).length / seriesShots.length) * 100;
-          
-          return {
-            'series': series, 
-            'score': seriesScore, 
-            'accuracy': seriesAccuracy, 
-            'shots': seriesShots.length
-          };
-        }).toList();
+  Widget _getSectionIcon(String section) {
+    switch (section) {
+      case "head":
+        return Icon(Icons.circle, color: Colors.green);
+      case "torso":
+        return Icon(Icons.circle, color: Colors.blue);
+      case "extremity":
+        return Icon(Icons.circle, color: Colors.orange);
+      default:
+        return Icon(Icons.circle, color: Colors.grey);
+    }
   }
 }

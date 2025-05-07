@@ -7,6 +7,11 @@ import 'package:provider/provider.dart';
 void main() {
   // Initialisation des bindings et orientation
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 👉 Cacher la barre du haut et la barre de navigation
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
+  // 👉 Forcer en mode paysage
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
@@ -22,6 +27,7 @@ void main() {
     ),
   );
 }
+
 
 class MilitaryTargetApp extends StatelessWidget {
   const MilitaryTargetApp({super.key});

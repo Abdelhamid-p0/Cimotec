@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:cible_militaire/controller/firebaseService.dart';
 import 'package:cible_militaire/model/shot.dart';
 import 'package:cible_militaire/view/pages/trainingStats.dart';
 import 'package:cible_militaire/view/widgets/nav_bar.dart';
@@ -69,11 +70,20 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
   int _torsoShots = 0;
   int _extremityShots = 0;
 
+  late FirebaseService _firebaseService;
+
+
   @override
   void initState() {
     super.initState();
     _initializeSessionParameters();
     _updateCurrentTime();
+     
+
+  // Initialiser Firebase à l'état de base
+  //_firebaseService = FirebaseService();
+  //_firebaseService.initializeData();
+
     _countdownController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
@@ -124,7 +134,7 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
     Timer(const Duration(seconds: 1), _updateCurrentTime);
   }
 
-  void _startSessionTimer() {
+  void _startSessionTimer(){
     _timer?.cancel();
     
     if (widget.selectedMode == "Entraînement libre") {
@@ -172,7 +182,7 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
       _countdownScale = 0.5;
     });
 
-    _playSound('../../../assets/sons/countdown_start.mp3');
+    _playSound('countdown_start.mp3');
     _countdownController?.forward();
 
     Future.delayed(const Duration(milliseconds: 100), () {
@@ -188,7 +198,7 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
     });
 
     _countdownTextTimer = Timer(const Duration(seconds: 2), () {
-      _playSound('../../../assets/sons/countdown_beep.mp3');
+      _playSound('countdown_beep.mp3');
       
       setState(() {
         _countdownText = "COMMENCEZ LE FEU";
@@ -203,7 +213,7 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
       });
 
       _countdownTextTimer = Timer(const Duration(seconds: 2), () {
-        _playSound('../../../assets/sons/session_start.mp3');
+        _playSound('session_start.mp3');
         
         setState(() {
           _countdownScale = 1.2;
@@ -222,7 +232,7 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
 
   Future<void> _playSound(String soundFile) async {
     try {
-      await _audioPlayer.play(AssetSource('../../../assets/sounds/$soundFile'));
+      await _audioPlayer.play(AssetSource('sons/$soundFile'));
     } catch (e) {
       debugPrint('Error playing sound: $e');
     }
@@ -246,6 +256,13 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
       _extremityShots = 0;
       _initializeSessionParameters();
     });
+    
+     // Écoute des changements pour déclencher les blink
+ /* _firebaseService.listenToSectionChanges(
+    onHead: _blinkSection1,
+    onTorso: _blinkSection3,
+    onExtremity: _blinkSection2,
+  );*/
 
     _startSessionTimer();
   }
@@ -276,17 +293,19 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
     }
     
     // Jouer le son approprié
-    switch (section) {
+    /*switch (section) {
       case "head":
-        _playSound('../../../assets/sons/shot_pist.mp3');
+        _playSound('shot_pist.mp3');
         break;
       case "torso":
-        _playSound('../../../assets/sons/shot_pist.mp3');
+        _playSound('shot_pist.mp3');
         break;
       case "extremity":
-        _playSound('../../../assets/sons/shot_pist.mp3');
+        _playSound('shot_pist.mp3');
         break;
-    }
+    }*/
+    _playSound('shot_pist.mp3');
+
 
     setState(() {
       _shots.add(Shot(
@@ -335,7 +354,7 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
     });
     _timer?.cancel();
     _countdownTimer?.cancel();
-    _playSound('../../../assets/sons/session_end.mp3');
+    _playSound('session_end.mp3');
   }
 
   void _pauseSession() {
@@ -344,7 +363,7 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
       _isPaused = true;
       _timer?.cancel();
     });
-    _playSound('../../../assets/sons/pause.mp3');
+    _playSound('pause.mp3');
   }
 
   void _resumeSession() {
@@ -353,7 +372,7 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
       _isPaused = false;
       _startSessionTimer();
     });
-    _playSound('../../../assets/sons/resume.mp3');
+    _playSound('resume.mp3');
   }
   
   void _resetSession() {
@@ -375,7 +394,7 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
       _extremityShots = 0;
       _initializeSessionParameters();
     });
-    _playSound('../../../assets/sons/reset.mp3');
+    _playSound('reset.mp3');
   }
 
   void _blinkSection1() {
@@ -525,7 +544,7 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
       body: Stack(
         children: [
           SvgPicture.asset(
-            '../assets/4.svg',
+            'assets/4.svg',
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
@@ -703,15 +722,15 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
             children: [
               ElevatedButton(
                 onPressed: _blinkSection1,
-                child: Text(_isBlinking ? 'Arrêter le clignotement' : 'Faire clignoter la section 1'),
+                child: Text(_isBlinking ? 'Arrêter le clignotement' : 'section 1'),
               ),
               ElevatedButton(
                 onPressed: _blinkSection2,
-                child: Text(_isBlinking ? 'Arrêter le clignotement' : 'Faire clignoter la section 2'),
+                child: Text(_isBlinking ? 'Arrêter le clignotement' : 'section 2'),
               ),
               ElevatedButton(
                 onPressed: _blinkSection3,
-                child: Text(_isBlinking ? 'Arrêter le clignotement' : 'Faire clignoter la section 3'),
+                child: Text(_isBlinking ? 'Arrêter le clignotement' : 'section 3'),
               ),
             ],
           ),
@@ -867,182 +886,186 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
       const SizedBox(height: 8),
       
       Expanded(
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.5),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  child: Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.white.withOpacity(0.5),
+      borderRadius: BorderRadius.circular(4),
+    ),
+    child: SingleChildScrollView(            // 👈 Ajouté ici
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-              
-                  if (lastShot != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: _getShotColor(lastShot.section).withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: _getShotColor(lastShot.section), width: 1),
-                      ),
-                      child: Text(
-                        _getSectionName(lastShot.section),
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: _getShotColor(lastShot.section),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Historique des tirs:',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 8),
-              // En-tête du tableau
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Colors.grey.withOpacity(0.5),
-                      width: 2,
+              if (lastShot != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _getShotColor(lastShot.section).withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: _getShotColor(lastShot.section), width: 1),
+                  ),
+                  child: Text(
+                    _getSectionName(lastShot.section),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: _getShotColor(lastShot.section),
                     ),
                   ),
                 ),
-                child: Row(
-                  children: const [
-                    Expanded(
-                      flex: 1,
-                      child: Text(
-                        'N°',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        'Section',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 1,
-                      child: Text(
-                        'Score',
-                        textAlign: TextAlign.end,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ),
-                  ],
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Historique des tirs:',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 8),
+          // En-tête du tableau
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.grey.withOpacity(0.5),
+                  width: 2,
                 ),
               ),
-              // Tableau scrollable des tirs
-              Expanded(
-                child: _shots.isEmpty
-                    ? Center(
-                        child: Text(
-                          'Aucun tir enregistré',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontStyle: FontStyle.italic,
+            ),
+            child: Row(
+              children: const [
+                Expanded(
+                  flex: 1,
+                  child: Text(
+                    'N°',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    'Section',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Text(
+                    'Score',
+                    textAlign: TextAlign.end,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Tableau scrollable
+          SizedBox(                     // 👈 Au lieu de Expanded
+            height: 300,                // 👈 adapte la hauteur selon ton besoin
+            child: _shots.isEmpty
+                ? Center(
+                    child: Text(
+                      'Aucun tir enregistré',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+                    padding: EdgeInsets.zero,
+                    itemCount: _shots.length,
+                    itemBuilder: (context, index) {
+                      final shot = _shots[_shots.length - 1 - index];
+                      return Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Colors.grey.withOpacity(0.3),
+                              width: 1,
+                            ),
                           ),
                         ),
-                      )
-                    : ListView.builder(
-                        padding: EdgeInsets.zero,
-                        itemCount: _shots.length,
-                        itemBuilder: (context, index) {
-                          final shot = _shots[_shots.length - 1 - index]; // Afficher les plus récents en premier
-                          return Container(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            decoration: BoxDecoration(
-                              border: Border(
-                                bottom: BorderSide(
-                                  color: Colors.grey.withOpacity(0.3),
-                                  width: 1,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: Text(
+                                '${_shots.length - index}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
                                 ),
                               ),
                             ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  flex: 1,
-                                  child: Text(
-                                    '${_shots.length - index}',
-                                    style: const TextStyle(
+                            Expanded(
+                              flex: 2,
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 12,
+                                    height: 12,
+                                    decoration: BoxDecoration(
+                                      color: _getShotColor(shot.section),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _getSectionName(shot.section),
+                                    style: TextStyle(
+                                      color: _getShotColor(shot.section),
                                       fontWeight: FontWeight.w500,
-                                      color: Colors.black87,
                                     ),
                                   ),
-                                ),
-                                Expanded(
-                                  flex: 2,
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 12,
-                                        height: 12,
-                                        decoration: BoxDecoration(
-                                          color: _getShotColor(shot.section),
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        _getSectionName(shot.section),
-                                        style: TextStyle(
-                                          color: _getShotColor(shot.section),
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 1,
-                                  child: Text(
-                                    shot.score.toStringAsFixed(1),
-                                    textAlign: TextAlign.end,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          );
-                        },
-                      ),
-              ),
-            ],
+                            Expanded(
+                              flex: 1,
+                              child: Text(
+                                shot.score.toStringAsFixed(1),
+                                textAlign: TextAlign.end,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
           ),
-        ),
+        ],
       ),
+    ),
+  ),
+),
+
       if (_isSessionComplete) 
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(8),
           child: ElevatedButton(
             onPressed: () {
               Navigator.push(

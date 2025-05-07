@@ -201,7 +201,7 @@ Widget buildDiamondLogo() {
       alignment: Alignment.center,
       children: [
         Image.asset(
-          '../assets/log_gauche.png',
+          'assets/log_gauche.png',
           fit: BoxFit.cover,
           width: 40,
           height: 60,
@@ -219,7 +219,7 @@ Widget buildShieldLogo() {
       alignment: Alignment.center,
       children: [
         Image.asset(
-          '../assets/far_logo.png',
+          'assets/far_logo.png',
           fit: BoxFit.cover,
           width: 60,
           height: 62,

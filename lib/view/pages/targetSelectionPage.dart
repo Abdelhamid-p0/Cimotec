@@ -102,13 +102,15 @@ final List<Map<String, dynamic>> targets = [
   Widget build(BuildContext context) {
     
     int selectedCoups = widget.selectedCoups;
+    final screenSize = MediaQuery.of(context).size;
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
 
     return Scaffold(
       body: Stack(
         children: [
           // Fond camouflage - SVG
           SvgPicture.asset(
-            '../assets/3.svg',
+            'assets/3.svg',
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
@@ -146,14 +148,14 @@ final List<Map<String, dynamic>> targets = [
                                 ),
                               ),
                               
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 12),
                               
                               // Options de mode d'entraînement
                               _buildModeSelection('Entraînement libre'),
-                              _buildModeSelection('Entraînement dirigé par Officier De Tir'),
+                              _buildModeSelection('Entraînement dirigé par OFFICIER DE TIR'),
                               _buildModeSelection('Entraînement compétition'),
                               
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 6),
                               
                               // Caractéristiques du mode sélectionné
                               Container(
@@ -167,7 +169,7 @@ final List<Map<String, dynamic>> targets = [
                                 child: _buildModeCharacteristics(selectedCoups),
                               ),
                               
-                              const Spacer(),
+                              const SizedBox(height: 8),
                               
                               // Bouton START
 Center(
@@ -280,14 +282,7 @@ Center(
                                         color: Colors.white,
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Rayon: ${targets[selectedTargetIndex]['radius']}',
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
+                                    
                                     
                                     const SizedBox(height: 20),
                                     
@@ -357,7 +352,8 @@ Center(
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        
+        padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 6),
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
           color: isSelected ? Colors.white.withOpacity(0.2) : Colors.transparent,
@@ -387,7 +383,7 @@ Center(
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  fontSize: 16,
+                  fontSize: 12,
                 ),
               ),
             ),
@@ -423,7 +419,7 @@ Center(
           ],
         );
       
-      case 'Entraînement dirigé par Officier De Tir':
+      case 'Entraînement dirigé par OFFICIER DE TIR':
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -495,7 +491,7 @@ class _CharacteristicItem extends StatelessWidget {
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 16,
+            fontSize: 12,
           ),
         ),
         const SizedBox(height: 4),
@@ -503,7 +499,7 @@ class _CharacteristicItem extends StatelessWidget {
           value,
           style: const TextStyle(
             color: Colors.white70,
-            fontSize: 14,
+            fontSize: 12,
           ),
         ),
       ],
