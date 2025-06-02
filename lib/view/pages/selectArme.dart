@@ -1,7 +1,10 @@
+import 'package:cible_militaire/Services/authentificationService.dart';
+import 'package:cible_militaire/Services/user_session.dart';
+import 'package:cible_militaire/model/player.dart';
 import 'package:cible_militaire/view/routes.dart';
 import 'package:cible_militaire/view/widgets/nav_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 
 class LaneSelectionMilitaryScreen extends StatefulWidget {
   const LaneSelectionMilitaryScreen({super.key});
@@ -16,6 +19,7 @@ class _LaneSelectionMilitaryScreenState extends State<LaneSelectionMilitaryScree
   String selectedRange = '100m';
   String selectedWeapon = 'AK-47';
   int selectedCoups = 10;
+  bool isUpdating = false; // Pour gérer l'état de chargement
 
   final Map<String, List<String>> weaponOptions = {
     '100m': ['AK-47', 'AK-102', 'M16 A1', 'M16 A2', 'SAR-21'],
@@ -44,6 +48,89 @@ class _LaneSelectionMilitaryScreenState extends State<LaneSelectionMilitaryScree
     'MP5': '15',
   };
 
+  // Fonction pour mettre à jour les données dans Firestore
+  Future<void> _updatePlayerData() async {
+    setState(() {
+      isUpdating = true;
+    });
+
+    try {
+      // Récupérer l'utilisateur connecté
+     final userSession = Provider.of<UserSession>(context, listen: false);
+      final currentPlayer = userSession.currentUser;
+      // Convertir selectedEmplacement en int
+      int emplacementValue = int.tryParse(selectedEmplacement ?? "1") ?? 1;
+      
+      // Extraire la valeur numérique de la portée (100m -> 100)
+      int porteeValue = int.tryParse(selectedRange.replaceAll('m', '')) ?? 100;
+
+      // Mettre à jour l'emplacement
+      bool emplacementUpdated = await AuthService.updatePlayerLocation(
+        currentPlayer!.nom,
+        currentPlayer.prenom,
+        emplacementValue,
+      );
+
+      // Mettre à jour l'arme et la portée
+      bool weaponUpdated = await AuthService.updatePlayerWeapon(
+        currentPlayer.nom,
+        currentPlayer.prenom,
+        selectedWeapon,
+        porteeValue,
+      );
+
+      if (emplacementUpdated && weaponUpdated) {
+        print("✅ Données mises à jour avec succès:");
+        print("   - Emplacement: $emplacementValue");
+        print("   - Arme: $selectedWeapon");
+        print("   - Portée: $porteeValue");
+        
+        // Afficher un message de succès
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Sélection enregistrée avec succès!'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        
+        // Naviguer vers l'écran suivant
+        final selectedCoupsStr = weaponCoups[selectedWeapon] as String;
+        final selectedCoups = int.tryParse(selectedCoupsStr) ?? 0;
+        
+        if (mounted) {
+          Navigator.pushNamed(
+            context, 
+            AppRoutes.targetSelection,
+            arguments: selectedCoups,
+          );
+        }
+      } else {
+        throw Exception("Échec de la mise à jour des données");
+      }
+        } catch (e) {
+      print("❌ Erreur lors de la mise à jour: $e");
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur lors de la sauvegarde: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isUpdating = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
@@ -54,8 +141,8 @@ class _LaneSelectionMilitaryScreenState extends State<LaneSelectionMilitaryScree
         children: [
           // Fond camouflage
           Positioned.fill(
-            child: SvgPicture.asset(
-              'assets/2.svg',
+            child: Image.asset(
+              'assets/2.png',
               fit: BoxFit.cover,
             ),
           ),
@@ -127,23 +214,15 @@ class _LaneSelectionMilitaryScreenState extends State<LaneSelectionMilitaryScree
                         _buildWeaponDropdown(),
                         
                         // Bouton en bas
-                        const SizedBox(
-                          height: 12
-                        ),
+                        const SizedBox(height: 12),
                         Padding(
                           padding: const EdgeInsets.only(top: 8),
                           child: ElevatedButton(
-                            onPressed: () {
-                              final selectedCoupsStr = weaponCoups[selectedWeapon] as String;
-                              final selectedCoups = int.tryParse(selectedCoupsStr) ?? 0;
-                              Navigator.pushNamed(
-                                context, 
-                                AppRoutes.targetSelection,
-                                arguments: selectedCoups,
-                              );
-                            },
+                            onPressed: isUpdating ? null : _updatePlayerData, // Désactivé pendant la mise à jour
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.amber.withOpacity(0.8),
+                              backgroundColor: isUpdating 
+                                ? Colors.grey.withOpacity(0.5)
+                                : Colors.amber.withOpacity(0.8),
                               foregroundColor: Colors.black,
                               minimumSize: const Size(double.infinity, 48),
                               shape: RoundedRectangleBorder(
@@ -152,20 +231,42 @@ class _LaneSelectionMilitaryScreenState extends State<LaneSelectionMilitaryScree
                               ),
                               elevation: 5,
                             ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.check_box, size: 16),
-                                SizedBox(width: 8),
-                                Text(
-                                  'SÉLECTIONNER',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 1.2,
-                                  ),
+                            child: isUpdating
+                              ? const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                                      ),
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'SAUVEGARDE...',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1.2,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.check_box, size: 16),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'SÉLECTIONNER',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1.2,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
                           ),
                         ),
                       ],

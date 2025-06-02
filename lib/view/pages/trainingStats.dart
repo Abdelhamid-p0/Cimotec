@@ -34,8 +34,8 @@ class TrainingStatsPage extends StatelessWidget {
       body: Stack(
         children: [
           // Fond d'écran SVG
-          SvgPicture.asset(
-            'assets/4.svg',
+          Image.asset(
+            'assets/5.png',
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,

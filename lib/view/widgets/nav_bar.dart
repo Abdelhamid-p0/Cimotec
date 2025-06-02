@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:cible_militaire/controller/user_session.dart';
+import 'package:cible_militaire/Services/user_session.dart';
 import 'package:cible_militaire/view/widgets/Apropos.dart';
 import 'package:cible_militaire/view/widgets/Historique.dart';
 import 'package:cible_militaire/view/widgets/InfosCompte.dart';
@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 
 class NavBar extends StatefulWidget {
   const NavBar({super.key});
+
 
   @override
   State<NavBar> createState() => _NavBarState();
@@ -45,6 +46,8 @@ class _NavBarState extends State<NavBar> {
 
   @override
   Widget build(BuildContext context) {
+      final userSession = Provider.of<UserSession>(context, listen: false);
+      final player = userSession.currentUser;
     return Column(
       children: [
         Container(
@@ -143,12 +146,9 @@ class _NavBarState extends State<NavBar> {
               // Informations utilisateur
               Row(
                 children: [
-                  const CircleAvatar(
-                    backgroundColor: Colors.grey,
-                    radius: 12,
-                  ),
+                  
                   const SizedBox(width: 8),
-                  const Text('Ayman', style: TextStyle(color: Colors.white70)),
+                  Text(player?.nom ?? 'utilisateur' , style: const TextStyle(color: Colors.white70 , fontSize: 18)),
                   IconButton(
                     icon: const Icon(Icons.logout, size: 20, color: Colors.white70),
                     onPressed: () {},

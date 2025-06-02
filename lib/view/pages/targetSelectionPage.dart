@@ -109,8 +109,8 @@ final List<Map<String, dynamic>> targets = [
       body: Stack(
         children: [
           // Fond camouflage - SVG
-          SvgPicture.asset(
-            'assets/3.svg',
+          Image.asset(
+            'assets/3.png',
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
