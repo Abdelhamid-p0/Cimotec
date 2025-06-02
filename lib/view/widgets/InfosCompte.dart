@@ -1,5 +1,5 @@
 //infos compte popup
-import 'package:cible_militaire/controller/user_session.dart';
+import 'package:cible_militaire/Services/user_session.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -89,7 +89,6 @@ showPlayerInfoDialog(BuildContext context) {
                       _buildDivider(),
                       _buildInfoRow('Numéro de liste', player?.numeroListe ?? '--'),
                       _buildDivider(),
-                      _buildInfoRow('BDE', player?.bdeNumeroListe ?? '--'),
                     ],
                   ),
                 ),

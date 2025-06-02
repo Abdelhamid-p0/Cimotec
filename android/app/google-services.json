@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "295199946538",
+    "firebase_url": "https://cimotecarm-default-rtdb.firebaseio.com",
+    "project_id": "cimotecarm",
+    "storage_bucket": "cimotecarm.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:295199946538:android:8eababea5eb5dee4fe1053",
+        "android_client_info": {
+          "package_name": "com.example.cible_militaire"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_rBpfkPKRm1tDIDOd8YWDR72nA3IN6y0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

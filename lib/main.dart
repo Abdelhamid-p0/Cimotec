@@ -1,21 +1,27 @@
-import 'package:cible_militaire/controller/user_session.dart';
+import 'package:cible_militaire/Services/user_session.dart';
+import 'package:cible_militaire/firebase_options.dart';
 import 'package:cible_militaire/view/routes.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-void main() {
-  // Initialisation des bindings et orientation
+Future<void> main() async {
+  // Éviter la double initialisation - une seule fois suffit
   WidgetsFlutterBinding.ensureInitialized();
-
-  // 👉 Cacher la barre du haut et la barre de navigation
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-
-  // 👉 Forcer en mode paysage
-  SystemChrome.setPreferredOrientations([
+  
+  // Configuration de l'interface système
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  await SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ]);
+
+  // Initialisation Firebase avec option de chargement différé
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+    // name: 'military-target', // Décommentez si vous avez plusieurs instances Firebase
+  );
 
   runApp(
     MultiProvider(
@@ -28,7 +34,6 @@ void main() {
   );
 }
 
-
 class MilitaryTargetApp extends StatelessWidget {
   const MilitaryTargetApp({super.key});
 
@@ -40,8 +45,14 @@ class MilitaryTargetApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       initialRoute: AppRoutes.login,
       onGenerateRoute: AppRoutes.generateRoute,
-      // Pour la navigation globale
       navigatorKey: NavigationService.navigatorKey,
+      // Ajout pour améliorer les performances
+      builder: (context, child) {
+        return ScrollConfiguration(
+          behavior: _ScrollBehaviorModified(),
+          child: child!,
+        );
+      },
     );
   }
 
@@ -58,8 +69,22 @@ class MilitaryTargetApp extends StatelessWidget {
         backgroundColor: Color(0xFF4CAF50),
         elevation: 0,
       ),
-      // Autres customizations...
+      // Optimisation des animations
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        },
+      ),
     );
+  }
+}
+
+// Optimisation du défilement
+class _ScrollBehaviorModified extends ScrollBehavior {
+  @override
+  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) {
+    return child;
   }
 }
 
@@ -67,7 +92,7 @@ class MilitaryTargetApp extends StatelessWidget {
 class NavigationService {
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   
-  static Future<dynamic> navigateTo(String routeName, {arguments}) {
+  static Future<dynamic> navigateTo(String routeName, {dynamic arguments}) {
     return navigatorKey.currentState!.pushNamed(routeName, arguments: arguments);
   }
   

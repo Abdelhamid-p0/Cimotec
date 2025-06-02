@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace =  'com.example.Cimotec_main'
+    namespace = "com.example.cible_militaire"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 

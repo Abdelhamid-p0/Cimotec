@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:cible_militaire/controller/firebaseService.dart';
+import 'package:cible_militaire/Services/authentificationService.dart';
+import 'package:cible_militaire/Services/firebaseService.dart';
+import 'package:cible_militaire/Services/user_session.dart';
 import 'package:cible_militaire/model/shot.dart';
 import 'package:cible_militaire/view/pages/trainingStats.dart';
 import 'package:cible_militaire/view/widgets/nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 
 class TrainingSessionPage extends StatefulWidget {
   final String selectedMode;
@@ -62,7 +65,6 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
   // Session stats
   double _totalScore = 0;
   double _accuracy = 0;
-  String _currentTime = "00:00:00";
   String _averageScore = "0.0";
   
   // Section stats
@@ -81,8 +83,8 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
      
 
   // Initialiser Firebase à l'état de base
-  //_firebaseService = FirebaseService();
-  //_firebaseService.initializeData();
+  _firebaseService = FirebaseService();
+  _firebaseService.initializeData();
 
     _countdownController = AnimationController(
       vsync: this,
@@ -129,7 +131,6 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
   void _updateCurrentTime() {
     setState(() {
       final now = DateTime.now();
-      _currentTime = "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}";
     });
     Timer(const Duration(seconds: 1), _updateCurrentTime);
   }
@@ -174,6 +175,7 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
   void _startInitialCountdown() {
     if (_isCountingDown || _isSessionActive) return;
 
+_firebaseService.initializeData;
     setState(() {
       _isCountingDown = true;
       _showCountdownText = true;
@@ -230,6 +232,7 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
     });
   }
 
+
   Future<void> _playSound(String soundFile) async {
     try {
       await _audioPlayer.play(AssetSource('sons/$soundFile'));
@@ -256,13 +259,12 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
       _extremityShots = 0;
       _initializeSessionParameters();
     });
-    
      // Écoute des changements pour déclencher les blink
- /* _firebaseService.listenToSectionChanges(
+  _firebaseService.listenToSectionChanges(
     onHead: _blinkSection1,
     onTorso: _blinkSection3,
     onExtremity: _blinkSection2,
-  );*/
+  );
 
     _startSessionTimer();
   }
@@ -292,19 +294,7 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
       return;
     }
     
-    // Jouer le son approprié
-    /*switch (section) {
-      case "head":
-        _playSound('shot_pist.mp3');
-        break;
-      case "torso":
-        _playSound('shot_pist.mp3');
-        break;
-      case "extremity":
-        _playSound('shot_pist.mp3');
-        break;
-    }*/
-    _playSound('shot_pist.mp3');
+
 
 
     setState(() {
@@ -347,15 +337,46 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
     _averageScore = (_totalScore / _shots.length).toStringAsFixed(1);
   }
 
-  void _completeSession() {
-    setState(() {
-      _isSessionComplete = true;
-      _isSessionActive = false;
-    });
-    _timer?.cancel();
-    _countdownTimer?.cancel();
-    _playSound('session_end.mp3');
-  }
+void _completeSession() async {
+  setState(() {
+    _isSessionComplete = true;
+    _isSessionActive = false;
+  });
+  _timer?.cancel();
+  _countdownTimer?.cancel();
+  _playSound('session_end.mp3');
+  
+  // Récupérer le joueur connecté (vous devrez peut-être passer cette info à la page)
+  final userSession = Provider.of<UserSession>(context, listen: false);
+  final currentPlayer = userSession.currentUser;
+  currentPlayer!.extremite = _extremityShots;
+  currentPlayer.parties ++;
+  currentPlayer.points = (currentPlayer.points + _totalScore) as int ;
+  currentPlayer.tete = _headShots;
+  currentPlayer.ventre = _torsoShots;
+    print("current player complet: $currentPlayer"  );
+    // Mettre à jour les stats dans le JSON
+
+
+final success = await AuthService.updatePlayerStats(
+  currentPlayer!,
+  _shots,
+);
+
+    
+    if (success) {
+      print("Statistiques mises à jour avec succès");
+      // Dans _completeSession, après la mise à jour réussie
+if (mounted) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('Statistiques enregistrées!'))
+  );
+}
+  
+  
+  _firebaseService.initializeData();
+}
+}
 
   void _pauseSession() {
     if (!_isSessionActive || _isPaused) return;
@@ -394,75 +415,96 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
       _extremityShots = 0;
       _initializeSessionParameters();
     });
+    
+    _firebaseService.initializeData();
+
     _playSound('reset.mp3');
   }
 
   void _blinkSection1() {
-    _recordHit("head");
-    if (_isBlinking) {
-      _blinkTimer?.cancel();
-      setState(() {
-        section1Color = Colors.black;
-        _isBlinking = false;
-      });
-      return;
-    }
+  _recordHit("head");
+
+  if (_isBlinking) {
+    _blinkTimer?.cancel();
+    setState(() {
+      section1Color = Colors.black;
+      _isBlinking = false;
+    });
+    return;
+  }
+
+  setState(() {
+    _isBlinking = true;
+    section1Color = Colors.red;
+  });
+  Future.delayed(Duration(seconds: 2), () => _playSound('shot_pist.mp3'));
+
+  _blinkTimer = Timer(const Duration(milliseconds: 500), () {
 
     setState(() {
-      _isBlinking = true;
+      section1Color = Colors.black;
+      _isBlinking = false;
     });
+  });
+}
 
-    _blinkTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
-      setState(() {
-        section1Color = section1Color == Colors.black ? Colors.red : Colors.black;
-      });
-    });
-  }
 
   void _blinkSection2() {
-    _recordHit("extremity");
-    if (_isBlinking) {
-      _blinkTimer?.cancel();
-      setState(() {
-        section2Color = Colors.black;
-        _isBlinking = false;
-      });
-      return;
-    }
+  _recordHit("extremity");
 
+  if (_isBlinking) {
+    _blinkTimer?.cancel();
     setState(() {
-      _isBlinking = true;
+      section2Color = Colors.black;
+      _isBlinking = false;
     });
-
-    _blinkTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
-      setState(() {
-        section2Color = section2Color == Colors.black ? const Color.fromARGB(255, 241, 244, 54) : Colors.black;
-      });
-    });
+    return;
   }
 
-  void _blinkSection3() {
-    _recordHit("torso");
+  setState(() {
+    _isBlinking = true;
+    section2Color = const Color.fromARGB(255, 241, 244, 54);
+  });
+  Future.delayed(Duration(seconds: 2), () => _playSound('shot_pist.mp3'));
 
-    if (_isBlinking) {
-      _blinkTimer?.cancel();
-      setState(() {
-        section3Color = Colors.black;
-        _isBlinking = false;
-      });
-      return;
-    }
+  _blinkTimer = Timer(const Duration(milliseconds: 500), () {
 
     setState(() {
-      _isBlinking = true;
+      section2Color = Colors.black;
+      _isBlinking = false;
+    });
+  });
+
+}
+
+void _blinkSection3() {
+  _recordHit("torso");
+
+  if (_isBlinking) {
+    _blinkTimer?.cancel();
+    setState(() {
+      section3Color = Colors.black;
+      _isBlinking = false;
+    });
+    return;
+  }
+
+  setState(() {
+    _isBlinking = true;
+    section3Color = const Color.fromARGB(255, 244, 124, 54);
+  });
+       
+  Future.delayed(Duration(seconds: 2), () => _playSound('shot_pist.mp3'));
+
+  _blinkTimer = Timer(const Duration(milliseconds: 500), () {
+    
+    setState(() {
+      section3Color = Colors.black;
+      _isBlinking = false;
     });
 
-    _blinkTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
-      setState(() {
-        section3Color = section3Color == Colors.black ? const Color.fromARGB(255, 244, 124, 54) : Colors.black;
-      });
-    });
-  }
+  });
+}
 
   String _buildSvgString() {
     return '''
@@ -512,39 +554,15 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
     }
   }
 
-  Widget _buildSectionStats() {
-    return Column(
-      children: [
-        const Text('Détail par section:', style: TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildSectionStat("Tête", _headShots, Colors.green),
-            _buildSectionStat("Ventre", _torsoShots, Colors.blue),
-            _buildSectionStat("Extrémité", _extremityShots, Colors.orange),
-          ],
-        ),
-      ],
-    );
-  }
 
-  Widget _buildSectionStat(String label, int count, Color color) {
-    return Column(
-      children: [
-        Text(label, style: TextStyle(color: color)),
-        Text('$count', style: TextStyle(fontWeight: FontWeight.bold)),
-      ],
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          SvgPicture.asset(
-            'assets/4.svg',
+          Image.asset(
+            'assets/4.png',
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
@@ -714,26 +732,13 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
                 child: SvgPicture.string(
                   _buildSvgString(),
                   fit: BoxFit.contain,
+                  key: ValueKey('$section1Color-$section2Color-$section3Color'),
+
                 ),
               ),
             ),
           ),
-          Row(
-            children: [
-              ElevatedButton(
-                onPressed: _blinkSection1,
-                child: Text(_isBlinking ? 'Arrêter le clignotement' : 'section 1'),
-              ),
-              ElevatedButton(
-                onPressed: _blinkSection2,
-                child: Text(_isBlinking ? 'Arrêter le clignotement' : 'section 2'),
-              ),
-              ElevatedButton(
-                onPressed: _blinkSection3,
-                child: Text(_isBlinking ? 'Arrêter le clignotement' : 'section 3'),
-              ),
-            ],
-          ),
+         
           Container(
             height: 50,
             color: Colors.grey[300]?.withOpacity(0.5),

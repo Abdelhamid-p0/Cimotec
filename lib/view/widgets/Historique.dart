@@ -1,17 +1,15 @@
-import 'package:cible_militaire/controller/user_session.dart';
+import 'package:cible_militaire/Services/user_session.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 void showShootingStatsDialog(BuildContext context) {
   final userSession = Provider.of<UserSession>(context, listen: false);
   final player = userSession.currentUser;
-  final stats = player?.resume ?? {};
 
   // Couleurs militaires
   const Color militaryDarkGreen = Color(0xFF3A4A1F);
   const Color militaryLightGreen = Color(0xFF6B7B3D);
   const Color militaryBrown = Color(0xFF5D4037);
-  const Color militaryBeige = Color(0xFFE8E1D7);
   const Color militaryGold = Color(0xFFD4AF37);
 
   final bool isTablet = MediaQuery.of(context).size.shortestSide > 600;
@@ -79,17 +77,17 @@ void showShootingStatsDialog(BuildContext context) {
                   padding: EdgeInsets.all(isTablet ? 24 : 16),
                   child: Column(
                     children: [
-                      _buildStatRow('Parties jouées', stats['Nombres de parties jouées'] ?? '0'),
+                      _buildStatRow('Parties jouées', player!.parties),
                       _buildDivider(),
-                      _buildStatRow('Moyenne points/tir', stats['Moyennes de points par tir'] ?? '0'),
+                      _buildStatRow('Moyenne points/tir', player.points),
                       _buildDivider(),
-                      _buildStatRow('Tirs à la tête', stats['nombres de tirs au tète'] ?? '0'),
+                      _buildStatRow('Tirs à la tête', player.tete),
                       _buildDivider(),
-                      _buildStatRow('Tirs au ventre', stats['nombres de tirs au ventre'] ?? '0'),
+                      _buildStatRow('Tirs au ventre', player.ventre),
                       _buildDivider(),
-                      _buildStatRow('Tirs aux extrémités', stats['nombres de tirs au extrémité'] ?? '0'),
+                      _buildStatRow('Tirs aux extrémités', player.extremite),
                       _buildDivider(),
-                      _buildStatRow('Tirs manqués', stats['nombres de tirs au manqué'] ?? '0'),
+                      _buildStatRow('Tirs manqués',0),
                     ],
                   ),
                 ),
@@ -127,7 +125,7 @@ void showShootingStatsDialog(BuildContext context) {
   );
 }
 
-Widget _buildStatRow(String label, String value) {
+Widget _buildStatRow(String label, int value) {
   return Padding(
     padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
     child: Row(
@@ -156,7 +154,7 @@ Widget _buildStatRow(String label, String value) {
               ),
             ),
             child: Text(
-              value,
+              value.toString(), // Conversion de int à String ici
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.black87,
@@ -171,8 +169,8 @@ Widget _buildStatRow(String label, String value) {
   );
 }
 
-Color _getValueColor(String label, String value) {
-  final numericValue = double.tryParse(value) ?? 0;
+Color _getValueColor(String label, int value) {
+  final numericValue = value;
   if (label.toLowerCase().contains('manqué')) {
     return Colors.red;
   } else if (numericValue > 5) {
@@ -181,7 +179,6 @@ Color _getValueColor(String label, String value) {
     return Color(0xFF5D4037);
   }
 }
-
 Widget _buildDivider() {
   return Divider(
     height: 1,
