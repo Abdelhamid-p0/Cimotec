@@ -35,6 +35,8 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
   bool _isPaused = false;
   Timer? _blinkTimer;
   bool _isBlinking = false;
+  
+  
 
   // Target section colors
   Color section1Color = Colors.black; // Tête
@@ -80,6 +82,9 @@ class _TrainingSessionPageState extends State<TrainingSessionPage> with TickerPr
     super.initState();
     _initializeSessionParameters();
     _updateCurrentTime();
+
+    final userSession = Provider.of<UserSession>(context, listen: false);
+    final currentPlayer = userSession.currentUser;
      
 
   // Initialiser Firebase à l'état de base
@@ -264,6 +269,7 @@ _firebaseService.initializeData;
     onHead: _blinkSection1,
     onTorso: _blinkSection3,
     onExtremity: _blinkSection2,
+    context: context
   );
 
     _startSessionTimer();

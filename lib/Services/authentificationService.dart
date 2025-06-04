@@ -288,6 +288,100 @@ class AuthService {
     }
   }
 
+
+static Future<bool> updateTete(
+    Player currentPlayer,
+  ) async {
+    try {
+      // Format cohérent: "prenom nom" (avec espace, en minuscules)
+      String documentId = "${currentPlayer.prenom.trim().toLowerCase()} ${currentPlayer.nom.trim().toLowerCase()}";
+      print("Mise à jour des stats pour: $documentId");
+
+      // Obtenir le document du joueur
+      DocumentSnapshot playerDoc = await _usersCollection.doc(documentId).get();
+
+      if (!playerDoc.exists) {
+        print("Joueur non trouvé dans Firestore avec l'ID: $documentId");
+        return false;
+      }
+
+            // Mettre à jour seulement les statistiques de jeu
+     await _usersCollection.doc(documentId).update({
+  'tete': FieldValue.increment(1),
+  'points': FieldValue.increment(5),
+});
+
+      print("Statistiques mises à jour pour le joueur avec ID: $documentId");
+      return true;
+    } catch (e) {
+      print("Erreur lors de la mise à jour des stats: $e");
+      return false;
+    }
+  }
+
+static Future<bool> updateVentre(
+    Player currentPlayer,
+  ) async {
+    try {
+      // Format cohérent: "prenom nom" (avec espace, en minuscules)
+      String documentId = "${currentPlayer.prenom.trim().toLowerCase()} ${currentPlayer.nom.trim().toLowerCase()}";
+      print("Mise à jour des stats pour: $documentId");
+
+      // Obtenir le document du joueur
+      DocumentSnapshot playerDoc = await _usersCollection.doc(documentId).get();
+
+      if (!playerDoc.exists) {
+        print("Joueur non trouvé dans Firestore avec l'ID: $documentId");
+        return false;
+      }
+
+
+
+      // Mettre à jour seulement les statistiques de jeu
+     await _usersCollection.doc(documentId).update({
+  'ventre': FieldValue.increment(1),
+  'points': FieldValue.increment(3),
+});
+
+
+      print("Statistiques mises à jour pour le joueur avec ID: $documentId");
+      return true;
+    } catch (e) {
+      print("Erreur lors de la mise à jour des stats: $e");
+      return false;
+    }
+  }
+
+static Future<bool> updateExtr(
+    Player currentPlayer,
+  ) async {
+    try {
+      // Format cohérent: "prenom nom" (avec espace, en minuscules)
+      String documentId = "${currentPlayer.prenom.trim().toLowerCase()} ${currentPlayer.nom.trim().toLowerCase()}";
+      print("Mise à jour des stats pour: $documentId");
+
+      // Obtenir le document du joueur
+      DocumentSnapshot playerDoc = await _usersCollection.doc(documentId).get();
+
+      if (!playerDoc.exists) {
+        print("Joueur non trouvé dans Firestore avec l'ID: $documentId");
+        return false;
+      }
+
+            // Mettre à jour seulement les statistiques de jeu
+     await _usersCollection.doc(documentId).update({
+  'extremite': FieldValue.increment(1),
+  'points': FieldValue.increment(1),
+});
+
+      print("Statistiques mises à jour pour le joueur avec ID: $documentId");
+      return true;
+    } catch (e) {
+      print("Erreur lors de la mise à jour des stats: $e");
+      return false;
+    }
+  }
+
   // ✨ MÉTHODE CORRIGÉE: Récupération de joueur avec le bon format d'ID
   static Future<Player?> getPlayerByName(String nom, String prenom) async {
     try {
