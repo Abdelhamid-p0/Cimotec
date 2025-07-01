@@ -189,7 +189,7 @@ class _LaneSelectionMilitaryScreenState extends State<LaneSelectionMilitaryScree
                             ),
                           ),
                           child: const Text(
-                            'SÉLECTIONNER UNE LIGNE',
+                            'SÉLECTIONNER UNE ARME',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,

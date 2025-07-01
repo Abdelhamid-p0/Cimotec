@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cible_militaire/view/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:cible_militaire/Services/user_session.dart';
 import 'package:cible_militaire/view/widgets/Apropos.dart';
@@ -140,8 +141,6 @@ class _NavBarState extends State<NavBar> {
           child: Row(
             children: [
               _buildNavButton('Start', true),
-              _buildNavButton('Review', false),
-              _buildNavButton('Manage', false),
               const Spacer(),
               // Informations utilisateur
               Row(
@@ -151,7 +150,16 @@ class _NavBarState extends State<NavBar> {
                   Text(player?.nom ?? 'utilisateur' , style: const TextStyle(color: Colors.white70 , fontSize: 18)),
                   IconButton(
                     icon: const Icon(Icons.logout, size: 20, color: Colors.white70),
-                    onPressed: () {},
+                    onPressed: () {
+                        final userSession = Provider.of<UserSession>(context, listen: false);
+
+                        userSession.logout();
+                        Navigator.pushNamed(
+                        context, 
+                       AppRoutes.login,
+          );
+                        
+                    },
                   ),
                   Text(_currentTime, style: const TextStyle(color: Colors.white70)),
                   IconButton(
